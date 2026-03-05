@@ -50,6 +50,28 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  if(user) {
+    const { data: profile } = await supabase
+      .from('user_profile')
+      .select('name')
+      .eq('id', user.sub)
+      .single()
+
+      const hasName = profile?.name && profile.name.trim().length > 0
+
+      if(!hasName && !request.nextUrl.pathname.startsWith('/auth/setup')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/auth/setup'
+        return NextResponse.redirect(url)
+      }
+
+      if(hasName && request.nextUrl.pathname.startsWith('/auth/setup')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+      }
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

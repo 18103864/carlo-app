@@ -87,9 +87,9 @@ const LoginForm = () => {
                             <Field>
                                 <Button
                                     type='submit'
-                                    disabled={isLoading}
+                                    disabled={isLoading || isSuccess}
                                 >
-                                    {isLoading ? 'Sending...' : 'Send Magic Link'}
+                                    {isLoading ? 'Sending...' : isSuccess ? 'Check your email' : 'Send Magic Link'}
                                 </Button>
                             </Field>
                         </FieldGroup>
