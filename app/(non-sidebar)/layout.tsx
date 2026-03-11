@@ -5,12 +5,10 @@ const layout = ({
     children
 }: {children: React.ReactNode}) => {
     return (
-        <>
-        <Navbar />
         <main>
+            <Navbar />
             {children}
         </main>
-        </>
     )
 }
 
