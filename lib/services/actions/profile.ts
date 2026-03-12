@@ -43,10 +43,10 @@ export async function getProfile(id: string) {
     const supabase = await createClient()
 
     const { data, error } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', id)
-        .single()
+    .from("user_profile")
+    .select("*")
+    .eq("id", id)
+    .single()
     
     if(error){
         return {error: true, message: 'Failed to get profile details'}

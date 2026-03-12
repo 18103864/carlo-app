@@ -4,8 +4,9 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldGroup, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
-import { Mail } from 'lucide-react'
-import { createClient } from '@/lib/client'
+import { CheckCircle, Mail, XCircle } from 'lucide-react'
+import { supabase } from '@/lib/client'
+import { Alert, AlertDescription } from '../ui/alert'
 
 const LoginForm = () => {
     const [email, setEmail] = useState<string>('')
@@ -17,7 +18,6 @@ const LoginForm = () => {
         e.preventDefault();
         if(!email.trim()) return
 
-        const supabase = createClient()
         setIsLoading(true)
 
         try {
@@ -29,7 +29,7 @@ const LoginForm = () => {
             })
 
             if(error){
-                setMessage(error.message)
+                setMessage('Failed to send magic link. Please try again. Error: ' + error.message)
                 setIsSuccess(false)
             }else{
                 setMessage('Check your email for the magic link!')
@@ -75,21 +75,29 @@ const LoginForm = () => {
                                     />
                                 </InputGroup>
                             </Field>
-                                {/* <Alert>
-                                    <CheckCircle />
-                                    <AlertTitle>
-                                        Magic Link Sent
-                                    </AlertTitle>
-                                    <AlertDescription>
-                                        Please check your email for the link
+                            {message && (
+                                <Alert
+                                    className={
+                                        isSuccess
+                                        ? "border-green-400 text-green-500"
+                                        : "border-red-400 text-red-500"
+                                    }
+                                >
+                                    {isSuccess ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                                    
+                                    <AlertDescription
+                                        className={isSuccess ? "text-green-500" : "text-red-500"}
+                                    >
+                                        {message}
                                     </AlertDescription>
-                                </Alert> */}
+                                </Alert>
+                            )}
                             <Field>
                                 <Button
                                     type='submit'
                                     disabled={isLoading || isSuccess}
                                 >
-                                    {isLoading ? 'Sending...' : isSuccess ? 'Check your email' : 'Send Magic Link'}
+                                    {isLoading ? 'Sending...' : isSuccess ? 'Magic Link Sent' : 'Send Magic Link'}
                                 </Button>
                             </Field>
                         </FieldGroup>
