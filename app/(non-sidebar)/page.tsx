@@ -1,6 +1,7 @@
-import { getProfile } from "@/lib/services/actions/profile";
+import OrganizationHeader from "@/components/organization/organization-header";
+import OrganizationList from "@/components/organization/organization-list";
+import { getOrganizations } from "@/lib/services/actions/organization";
 import { getCurrentUser } from "@/lib/services/getCurrentUser";
-import { Loader2 } from "lucide-react";
 import { redirect } from "next/navigation";
 
 export default async function Home(){
@@ -10,14 +11,12 @@ export default async function Home(){
         redirect('/auth/login')
     }
 
-    const user_info = await getProfile(user.id)
+    const {data: organizations, error, message} = await getOrganizations()
+    
 
     return (
-        <div className="min-h-screen-with-header flex items-center justify-center p-4">
-            <div className="text-center space-y-4">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto" />
-                <p className="text-muted-foreground">Loading...</p>
-            </div>
+        <div className="min-h-screen-with-header max-w-7xl flex flex-col items-stretch px-6 mx-auto space-y-5">
+            <OrganizationList organizations={organizations} error={error} message={message} id={user.id}/>
         </div>
     )
 }
