@@ -1,4 +1,3 @@
-import OrganizationHeader from "@/components/organization/organization-header";
 import OrganizationList from "@/components/organization/organization-list";
 import { getOrganizations } from "@/lib/services/actions/organization";
 import { getCurrentUser } from "@/lib/services/getCurrentUser";
@@ -16,7 +15,7 @@ export default async function Home(){
 
     return (
         <div className="min-h-screen-with-header max-w-7xl flex flex-col items-stretch px-6 mx-auto space-y-5">
-            <OrganizationList organizations={organizations} error={error} message={message} id={user.id}/>
+            <OrganizationList organizations={organizations || []} error={error} message={message} id={user.id}/>
         </div>
     )
 }
