@@ -2,8 +2,12 @@
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '../ui/card'
-import { Boxes, Crown } from 'lucide-react'
+import { Boxes, Crown, FolderCodeIcon, PlusIcon } from 'lucide-react'
 import OrganizationHeader from './organization-header'
+import { Organization } from '@/lib/types'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty'
+import { Button } from '../ui/button'
+import { redirect } from 'next/navigation'
 
 const OrganizationList = ({
     organizations,
@@ -11,7 +15,7 @@ const OrganizationList = ({
     message,
     id
 }: {
-    organizations: any
+    organizations: Organization[]
     error: boolean
     message?: string 
     id: string
@@ -37,9 +41,24 @@ const OrganizationList = ({
             <OrganizationHeader />
 
             {organizations.length === 0 ? (
-                <div className='flex flex-1 items-center justify-center'>
-                    <p>No organizations found</p>
-                </div>
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <FolderCodeIcon />
+                        </EmptyMedia>
+                        <EmptyTitle>No Organizations Yet</EmptyTitle>
+                        <EmptyDescription>
+                            You haven&apos;t created any organizations yet. Get started by creating
+                            your first organization.
+                        </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent className="flex-row justify-center gap-2">
+                        <Button size={'sm'} onClick={() => redirect('/create')}>
+                            <PlusIcon />
+                            New Organization
+                        </Button>
+                    </EmptyContent>
+                </Empty>
             ) : (
                 <div className={cn(
                     'gap-4 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))]',

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useOrg } from '@/context/org-context'
+import OrgLoader from './org-loader'
 
 const OrgSwitcher = () => {
     const router = useRouter()
@@ -35,6 +36,16 @@ const OrgSwitcher = () => {
         }
     }, [orgId])
 
+    if (isLoading || !organization) {
+        return (
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <OrgLoader />
+                </SidebarMenuItem>
+            </SidebarMenu>
+        )
+    }
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
@@ -44,11 +55,12 @@ const OrgSwitcher = () => {
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                {organization?.name.charAt(0).toUpperCase()}
+                            
+                            <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                                {organization.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{organization?.name}</span>
+                                <span className="truncate font-medium">{organization.name}</span>
                             </div>
                             <ChevronsUpDown className="ml-auto" />
                         </SidebarMenuButton>
