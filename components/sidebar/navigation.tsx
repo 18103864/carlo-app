@@ -48,10 +48,6 @@ const Navigation = () => {
             return pathname === '/';
         }
 
-        if(url === `/organization/${orgId}`) {
-            return pathname === url;
-        }
-
         return pathname.startsWith(url)
     }
 

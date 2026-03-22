@@ -63,7 +63,14 @@ export async function getBoardById(id: string) {
     return { error: false, data}
 }
 
-export async function createBoard(unsafeData: z.infer<typeof createBoardSchema>) {
+const DEFAULT_SECTIONS = [
+    { title: 'To Do', sort_order: 0 },
+    { title: 'In Progress', sort_order: 1 },
+    { title: 'Testing', sort_order: 2 },
+    { title: 'Done', sort_order: 3 },
+]
+
+export async function createBoardWithSections(unsafeData: z.infer<typeof createBoardSchema>) {
     const {success, data} = createBoardSchema.safeParse(unsafeData)
     const user = await getCurrentUser()
 
@@ -90,6 +97,14 @@ export async function createBoard(unsafeData: z.infer<typeof createBoardSchema>)
     if(error) {
         return { error: true, message: 'Failed to create board'}
     }
+
+    const defaultSections = DEFAULT_SECTIONS.map(section => ({
+        ...section,
+        board_id: board.id,
+        creator_id: user.id,
+    }))
+
+    await supabase.from('section').insert(defaultSections)
 
     revalidatePath(`/organization/${data.org_id}`)
     return { 

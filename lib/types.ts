@@ -16,3 +16,12 @@ export interface Board {
     created_at: string
     updated_at: string
 }
+
+export interface Section {
+    id: string
+    title: string
+    sort_order: number
+    board_id: string
+    creator_id: string
+    created_at: string
+}
