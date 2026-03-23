@@ -1,3 +1,6 @@
+'use server'
+
+import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/server"
 import { getCurrentUser } from "../getCurrentUser"
 import z from "zod"
@@ -18,6 +21,7 @@ export async function getSections(boardId: string) {
         .from('section')
         .select('*')
         .eq('board_id', boardId)
+        .order('sort_order', { ascending: true })
 
     if(error) {
         return { error: true, message: 'Failed to get sections'}
@@ -54,5 +58,6 @@ export async function createSection(unsafeData: z.infer<typeof createSectionSche
         return { error: true, message: 'Failed to create section'}
     }
 
+    revalidatePath(`/board/${data.board_id}`)
     return { error: false, section}
 }
