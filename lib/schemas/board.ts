@@ -5,3 +5,8 @@ export const createBoardSchema = z.object({
     org_id: z.string().trim().min(1, { message: 'Organization ID is required' }),
     description: z.string().trim().optional(),
 })
+
+export const updateBoardSchema = z.object({
+    title: z.string().trim().min(1, { message: 'Board title is required' }),
+    description: z.string().trim().optional(),
+})

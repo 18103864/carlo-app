@@ -12,7 +12,7 @@ import { Controller, useForm } from 'react-hook-form'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Field, FieldError, FieldLabel } from '../ui/field'
-import { createBoard } from '@/lib/services/actions/board'
+import { createBoardWithSections } from '@/lib/services/actions/board'
 
 type formData = z.infer<typeof createBoardSchema>
 
@@ -34,7 +34,7 @@ const BoardHeader = ({
     })
     
     async function handleCreateBoard(data: formData) {
-        const {error, message, board} = await createBoard(data)
+        const {error, message, board} = await createBoardWithSections(data)
 
         if(error){
             console.log(message)
