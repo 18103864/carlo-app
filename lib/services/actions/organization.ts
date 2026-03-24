@@ -18,6 +18,7 @@ export async function getOrganizations() {
         .from('organization')
         .select('*')
         .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
 
     if(error) {
         return { error: true, message: 'Failed to get organizations'}

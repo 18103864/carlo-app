@@ -1,5 +1,5 @@
 'use client'
-import { useOptimistic, useTransition } from 'react'
+import { useOptimistic, useState, useTransition } from 'react'
 import { Section, Task } from '@/lib/types'
 import CreateTaskForm from '../task/create-task-form'
 import TaskEmpty from '../task/task-empty'
@@ -9,6 +9,7 @@ import z from 'zod'
 import TaskItem from '../task/task-item'
 import { Card, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
+import UpdateSectionForm from './update-section-form'
 
 interface SectionCardClientProps {
     section: Section
@@ -19,6 +20,7 @@ type FormData = z.infer<typeof createTaskSchema>
 
 const SectionCardClient = ({ section, initialTasks }: SectionCardClientProps) => {
     const [isPending, startTransition] = useTransition()
+    const [currentSection, setCurrentSection] = useState(section)
     const [optimisticTasks, addOptimisticTask] = useOptimistic(
         initialTasks,
         (state, newTask: Task) => [newTask, ...state]
@@ -49,11 +51,15 @@ const SectionCardClient = ({ section, initialTasks }: SectionCardClientProps) =>
         <Card className='p-0 gap-0'>
             <div className='border-b px-6 py-4 flex justify-between items-center'>
                 <h1 className='leading-none font-semibold flex items-center gap-1'>
-                    {section.title}
+                    {currentSection.title}
                     <Badge className='rounded-md bg-accent text-foreground'>
                         {optimisticTasks.length}
                     </Badge>
                 </h1>
+                <UpdateSectionForm 
+                    section={currentSection}
+                    onUpdate={setCurrentSection}
+                />
             </div>
             <CardContent className='px-6 py-6 w-full h-full flex flex-col justify-between space-y-4'>
                 {optimisticTasks.length === 0 ? (

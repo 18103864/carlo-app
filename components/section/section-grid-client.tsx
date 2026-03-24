@@ -1,10 +1,11 @@
 'use client'
-import { ReactNode, useOptimistic, useTransition } from 'react'
+import { ReactNode, useOptimistic, useState, useTransition } from 'react'
 import { Board, Section } from '@/lib/types'
 import { Separator } from '../ui/separator'
 import SectionEmpty from './section-empty'
 import SectionCardClient from './section-card-client'
 import CreateSectionForm from './create-section-form'
+import UpdateBoardForm from '../board/update-board-form'
 import { createSection } from '@/lib/services/actions/section'
 import { createSectionSchema } from '@/lib/schemas/section'
 import z from 'zod'
@@ -19,6 +20,7 @@ interface SectionGridClientProps {
 
 const SectionGridClient = ({ board, initialSections, children }: SectionGridClientProps) => {
     const [isPending, startTransition] = useTransition()
+    const [currentBoard, setCurrentBoard] = useState(board)
     const [optimisticSections, addOptimisticSection] = useOptimistic(
         initialSections,
         (state, newSection: Section) => [...state, newSection]
@@ -47,9 +49,16 @@ const SectionGridClient = ({ board, initialSections, children }: SectionGridClie
     return (
         <div className='w-full flex flex-col px-4 lg:px-10 py-6 flex-1 min-h-0'>
             <div className='w-full flex justify-between items-center'>
-                <h1 className='text-4xl'>
-                    {board?.title}
-                </h1>
+                <div className='flex items-center gap-2'>
+                    <h1 className='text-4xl'>
+                        {currentBoard?.title}
+                    </h1>
+                    <UpdateBoardForm 
+                        board={currentBoard} 
+                        onUpdate={setCurrentBoard}
+                    />
+                </div>
+                
                 <div className='flex items-center gap-x-6'>
                     <div className='flex flex-col gap-y-1'>
                         <span className='text-sm text-muted-foreground'>

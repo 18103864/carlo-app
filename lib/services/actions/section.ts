@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/server"
 import { getCurrentUser } from "../getCurrentUser"
 import z from "zod"
-import { createSectionSchema } from "@/lib/schemas/section"
+import { createSectionSchema, updateSectionSchema } from "@/lib/schemas/section"
 
 export async function getSections(boardId: string) {
     const user = await getCurrentUser()
@@ -60,4 +60,49 @@ export async function createSection(unsafeData: z.infer<typeof createSectionSche
 
     revalidatePath(`/board/${data.board_id}`)
     return { error: false, section}
+}
+
+export async function updateSection(id: string, unsafeData: z.infer<typeof updateSectionSchema>) {
+    const { success, data } = updateSectionSchema.safeParse(unsafeData)
+    const user = await getCurrentUser()
+
+    if (!user) {
+        return { error: true, message: 'User is not authenticated' }
+    }
+
+    if (!id.trim()) {
+        return { error: true, message: 'Section ID cannot be empty' }
+    }
+
+    if (!success) {
+        return { error: true, message: 'Invalid section data' }
+    }
+
+    const supabase = await createClient()
+
+    const { data: existingSection, error: fetchError } = await supabase
+        .from('section')
+        .select('board_id')
+        .eq('id', id)
+        .single()
+
+    if (fetchError || !existingSection) {
+        return { error: true, message: 'Section not found' }
+    }
+
+    const { data: section, error } = await supabase
+        .from('section')
+        .update({
+            title: data.title,
+        })
+        .eq('id', id)
+        .select('*')
+        .single()
+
+    if (error) {
+        return { error: true, message: 'Failed to update section' }
+    }
+
+    revalidatePath(`/board/${existingSection.board_id}`)
+    return { error: false, data: section }
 }

@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/server"
 import { getCurrentUser } from "../getCurrentUser"
-import { createTaskSchema } from "@/lib/schemas/task"
+import { createTaskSchema, updateTaskSchema } from "@/lib/schemas/task"
 import z from "zod"
 
 export async function getTasks(sectionId: string) {
@@ -74,4 +74,53 @@ export async function createTask(unsafeData: z.infer<typeof createTaskSchema>) {
     revalidatePath('/organization', 'layout')
 
     return { error: false, task}
+}
+
+export async function updateTask(id: string, unsafeData: z.infer<typeof updateTaskSchema>) {
+    const { success, data } = updateTaskSchema.safeParse(unsafeData)
+    const user = await getCurrentUser()
+
+    if (!user) {
+        return { error: true, message: 'User is not authenticated' }
+    }
+
+    if (!id.trim()) {
+        return { error: true, message: 'Task ID cannot be empty' }
+    }
+
+    if (!success) {
+        return { error: true, message: 'Invalid task data' }
+    }
+
+    const supabase = await createClient()
+
+    const { data: task, error } = await supabase
+        .from('task')
+        .update({
+            title: data.title,
+            description: data.description,
+            due_date: data.due_date,
+            assignee_id: data.assignee_id || null,
+            priority: data.priority,
+        })
+        .eq('id', id)
+        .select('*, creator:creator_id(name), assignee:assignee_id(name)')
+        .single()
+
+    if (error) {
+        return { error: true, message: 'Failed to update task' }
+    }
+
+    revalidatePath('/organization', 'layout')
+
+    return { 
+        error: false, 
+        data: {
+            ...task,
+            creator_name: task.creator?.name,
+            assignee_name: task.assignee?.name,
+            creator: undefined,
+            assignee: undefined,
+        }
+    }
 }
