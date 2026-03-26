@@ -1,22 +1,27 @@
-
 import { ModeToggle } from '@/components/mode-toggle'
 import AppSidebar from '@/components/sidebar/app-sidebar'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { getOrganizations } from '@/lib/services/queries/organization'
 import { cookies } from 'next/headers'
 import React from 'react'
 
-const layout =  async ({
+const layout = async ({
     children
 }: {
     children: React.ReactNode
 }) => {
-    const sidebarCookie = await cookies();
-    const defaultOpen = sidebarCookie.get('sidebar_state')?.value === 'true';
+    const [sidebarCookie, organizationsResult] = await Promise.all([
+        cookies(),
+        getOrganizations()
+    ])
+    
+    const defaultOpen = sidebarCookie.get('sidebar_state')?.value === 'true'
+    const organizations = organizationsResult.data ?? []
     
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
-            <AppSidebar />
+            <AppSidebar organizations={organizations} />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2 px-4">

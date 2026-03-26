@@ -2,7 +2,6 @@
 import { CreditCard, Inbox, Presentation, Settings, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useOrg } from '@/context/org-context';
 
@@ -46,6 +45,10 @@ const Navigation = () => {
     const isActive = (url: string) => {
         if(url === '/'){
             return pathname === '/';
+        }
+
+        if(url === `/organization/${orgId}`){
+            return pathname === url || pathname.startsWith(`/organization/${orgId}/board`);
         }
 
         return pathname.startsWith(url)

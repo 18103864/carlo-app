@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useOptimistic, useState, useTransition } from 'react'
 import { Board, SectionWithTasks, Task } from '@/lib/types'
+import { useAuth } from '@/context/auth-context'
 import { Separator } from '../ui/separator'
 import SectionEmpty from './section-empty'
 import CreateSectionForm from './create-section-form'
@@ -11,7 +12,7 @@ import { createTaskSchema } from '@/lib/schemas/task'
 import { createTask, moveTask, reorderTasks } from '@/lib/services/actions/task'
 import z from 'zod'
 import DroppableSection from './droppable-section'
-import StaticSection from './static-section'
+import SectionGridLoader from './section-grid-loader'
 import TaskOverlay from '../task/task-overlay'
 import { 
     DndContext, 
@@ -35,6 +36,7 @@ interface SectionGridClientProps {
 }
 
 const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) => {
+    const { user, profile } = useAuth()
     const [isPending, startTransition] = useTransition()
     const [currentBoard, setCurrentBoard] = useState(board)
     const [sections, setSections] = useState<SectionWithTasks[]>(initialSections)
@@ -86,7 +88,8 @@ const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) =
                 description: data.description,
                 section_id: data.section_id,
                 sort_order: data.sort_order,
-                creator_id: '',
+                creator_id: user?.id ?? '',
+                creator_name: profile?.name,
                 assignee_id: data.assignee_id,
                 due_date: data.due_date?.toISOString(),
                 priority: data.priority,
@@ -142,7 +145,7 @@ const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) =
                 }
             })
         }
-    }, [])
+    }, [user?.id, profile?.name])
 
     const findSectionByTaskId = (taskId: string) => {
         return sections.find(section => 
@@ -304,7 +307,7 @@ const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) =
     return (
         <div className='w-full flex flex-col px-4 lg:px-10 py-6 flex-1 min-h-0'>
             <div className='w-full flex justify-between items-center'>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-baseline gap-2'>
                     <h1 className='text-4xl'>
                         {currentBoard?.title}
                     </h1>
@@ -314,7 +317,7 @@ const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) =
                     />
                 </div>
                 
-                <div className='flex items-center gap-x-6'>
+                <div className='hidden lg:flex items-center gap-x-6'>
                     <div className='flex flex-col gap-y-1'>
                         <span className='text-sm text-muted-foreground'>
                             Sections
@@ -341,26 +344,7 @@ const SectionGridClient = ({ board, initialSections }: SectionGridClientProps) =
                     <SectionEmpty />
                 </div>
             ) : !isMounted ? (
-                <div className='mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start'>
-                    {existingSections.map((section) => (
-                        <StaticSection
-                            key={section.id}
-                            section={section}
-                            tasks={section.tasks}
-                            onCreateTask={handleCreateTask(section.id)}
-                            isPending={isPending}
-                        />
-                    ))}
-                    {newOptimisticSections.map((section) => (
-                        <StaticSection
-                            key={section.id}
-                            section={section}
-                            tasks={section.tasks}
-                            onCreateTask={handleCreateTask(section.id)}
-                            isPending={isPending}
-                        />
-                    ))}
-                </div>
+                <SectionGridLoader />
             ) : (
                 <DndContext
                     sensors={sensors}

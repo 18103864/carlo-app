@@ -3,7 +3,7 @@ import { Board, Section, SectionWithTasks, Task } from '@/lib/types'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '../ui/button'
 import SectionGridClient from './section-grid-client'
-import { getTasks } from '@/lib/services/actions/task'
+import { getTasksByBoardId } from '@/lib/services/queries/task'
 
 interface SectionGridProps {
     board: Board
@@ -11,13 +11,21 @@ interface SectionGridProps {
 }
 
 const SectionGrid = async ({ board, sections }: SectionGridProps) => {
-    const sectionsWithTasks: SectionWithTasks[] = await Promise.all(
-        sections.map(async (section) => {
-            const result = await getTasks(section.id)
-            const tasks: Task[] = result.error ? [] : (result.data as Task[])
-            return { ...section, tasks }
-        })
-    )
+    const tasksResult = await getTasksByBoardId(board.id)
+    const allTasks: Task[] = tasksResult.error ? [] : (tasksResult.data as Task[])
+    
+    const tasksBySection = allTasks.reduce((acc, task) => {
+        if (!acc[task.section_id]) {
+            acc[task.section_id] = []
+        }
+        acc[task.section_id].push(task)
+        return acc
+    }, {} as Record<string, Task[]>)
+    
+    const sectionsWithTasks: SectionWithTasks[] = sections.map(section => ({
+        ...section,
+        tasks: tasksBySection[section.id] || []
+    }))
 
     return (
         <div className='h-full flex flex-col'>        

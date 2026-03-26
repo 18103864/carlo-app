@@ -1,13 +1,18 @@
+import { Organization } from '@/lib/types'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '../ui/sidebar'
 import Navigation from './navigation'
 import OrgSwitcher from './org-switcher'
 import UserButton from './user-button'
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+    organizations: Organization[]
+}
+
+const AppSidebar = ({ organizations }: AppSidebarProps) => {
     return (
         <Sidebar collapsible='icon'>
             <SidebarHeader>
-                <OrgSwitcher />
+                <OrgSwitcher organizations={organizations} />
             </SidebarHeader>
             <Navigation />
             <SidebarFooter>

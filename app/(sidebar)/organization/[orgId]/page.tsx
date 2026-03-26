@@ -1,6 +1,6 @@
 import BoardList from "@/components/board/board-list"
-import { getBoards } from "@/lib/services/actions/board"
-import { getOrganizationById } from "@/lib/services/actions/organization"
+import { getBoards } from "@/lib/services/queries/board"
+import { getOrganizationById } from "@/lib/services/queries/organization"
 
 const organizationPage = async ({
     params

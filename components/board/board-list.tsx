@@ -1,5 +1,5 @@
 'use client'
-import { createContext, Suspense, use, useContext, useOptimistic } from 'react'
+import { createContext, Suspense, use, useContext, useOptimistic, startTransition } from 'react'
 import { Board, Organization } from '@/lib/types'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardTitle } from '../ui/card'
@@ -39,7 +39,7 @@ function BoardListContent() {
             <Empty>
                 <EmptyHeader>
                     <EmptyMedia variant="icon">
-                        <Presentation />
+                        <Presentation strokeWidth={1}/>
                     </EmptyMedia>
                     <EmptyTitle>No Boards Yet</EmptyTitle>
                     <EmptyDescription>
@@ -62,7 +62,7 @@ function BoardListContent() {
                     <Card className="@container/card rounded-md py-4 hover:border-primary h-24 justify-center">
                         <CardContent className='flex items-center gap-2 px-4'>
                             <div className='rounded-full bg-primary dark:bg-accent text-primary-foreground min-w-10 min-h-10 flex justify-center items-center'>
-                                {board.title[0].toLocaleUpperCase()}
+                                <Presentation strokeWidth={1.5} size={16}/>
                             </div>
                             <div>
                                 <CardTitle className="text-sm font-semibold tabular-nums">
@@ -103,7 +103,9 @@ function BoardListWithData({
     )
 
     function handleBoardCreated(board: Board) {
-        addOptimisticBoard(board)
+        startTransition(() => {
+            addOptimisticBoard(board)
+        })
     }
 
     return (

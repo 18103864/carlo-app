@@ -5,53 +5,6 @@ import { createOrganizationSchema } from "@/lib/schemas/organizations"
 import { createClient } from "@/lib/server"
 import z from "zod"
 
-export async function getOrganizations() {
-    const user = await getCurrentUser()
-
-    if(!user) {
-        return { error: true, message: 'User is not authenticated'}
-    }
-
-    const supabase = await createClient()
-
-    const { data, error } = await supabase
-        .from('organization')
-        .select('*')
-        .eq('owner_id', user.id)
-        .order('created_at', { ascending: false })
-
-    if(error) {
-        return { error: true, message: 'Failed to get organizations'}
-    }
-
-    return { error: false, data}
-}
-
-export async function getOrganizationById(id: string) {
-    const user = await getCurrentUser()
-
-    if(!user) {
-        return { error: true, message: 'User is not authenticated'}
-    }
-
-    if(!id.trim()) {
-        return { error: true, message: 'Id cannot be empty'}
-    }
-
-    const supabase = await createClient()
-    const {data, error} = await supabase
-        .from('organization')
-        .select('*')
-        .eq('id', id)
-        .single()
-        
-    if(error) {
-        return { error: true, message: 'Failed to get organization'}
-    }
-
-    return { error: false, data}
-}
-
 export async function createOrganization(unsafeData: z.infer<typeof createOrganizationSchema>) {
     const {success, data} = createOrganizationSchema.safeParse(unsafeData)
     const user = await getCurrentUser()
