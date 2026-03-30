@@ -1,7 +1,7 @@
 'use server'
 import { createClient } from "@/lib/server"
 import { getCurrentUser } from "../getCurrentUser"
-import { createTaskSchema, updateTaskSchema, moveTaskSchema, reorderTasksSchema } from "@/lib/schemas/task"
+import { createTaskSchema, updateTaskSchema, moveTaskSchema } from "@/lib/schemas/task"
 import z from "zod"
 
 export async function createTask(unsafeData: z.infer<typeof createTaskSchema>) {
@@ -109,62 +109,37 @@ export async function moveTask(unsafeData: z.infer<typeof moveTaskSchema>) {
 
     const supabase = await createClient()
 
-    const { data: task, error } = await supabase
+    const { error: moveError } = await supabase
         .from('task')
-        .update({
-            section_id: data.targetSectionId,
-            sort_order: data.newSortOrder,
-        })
+        .update({ section_id: data.targetSectionId })
         .eq('id', data.taskId)
-        .select('*, creator:creator_id(name), assignee:assignee_id(name)')
-        .single()
 
-    if (error) {
+    if (moveError) {
         return { error: true, message: 'Failed to move task' }
     }
 
-    return { 
-        error: false, 
-        data: {
-            ...task,
-            creator_name: task.creator?.name,
-            assignee_name: task.assignee?.name,
-            creator: undefined,
-            assignee: undefined,
+    const reorderSection = async (sectionId: string, taskIds: string[]) => {
+        for (let i = 0; i < taskIds.length; i++) {
+            const { error } = await supabase
+                .from('task')
+                .update({ sort_order: taskIds.length - 1 - i })
+                .eq('id', taskIds[i])
+                .eq('section_id', sectionId)
+
+            if (error) {
+                return { error: true, message: 'Failed to reorder tasks' }
+            }
         }
-    }
-}
-
-export async function reorderTasks(unsafeData: z.infer<typeof reorderTasksSchema>) {
-    const { success, data } = reorderTasksSchema.safeParse(unsafeData)
-    const user = await getCurrentUser()
-
-    if (!user) {
-        return { error: true, message: 'User is not authenticated' }
+        return null
     }
 
-    if (!success) {
-        return { error: true, message: 'Invalid reorder data' }
+    const targetError = await reorderSection(data.targetSectionId, data.targetSectionTaskIds)
+    if (targetError) return targetError
+
+    if (data.sourceSectionId && data.sourceSectionTaskIds) {
+        const sourceError = await reorderSection(data.sourceSectionId, data.sourceSectionTaskIds)
+        if (sourceError) return sourceError
     }
 
-    const supabase = await createClient()
-
-    const updates = data.taskIds.map((taskId, index) => ({
-        id: taskId,
-        sort_order: data.taskIds.length - 1 - index,
-    }))
-
-    for (const update of updates) {
-        const { error } = await supabase
-            .from('task')
-            .update({ sort_order: update.sort_order })
-            .eq('id', update.id)
-            .eq('section_id', data.sectionId)
-
-        if (error) {
-            return { error: true, message: 'Failed to reorder tasks' }
-        }
-    }
-
-    return { error: false, message: 'Tasks reordered successfully' }
+    return { error: false, message: 'Task moved successfully' }
 }

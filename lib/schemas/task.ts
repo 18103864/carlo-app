@@ -21,10 +21,7 @@ export const updateTaskSchema = z.object({
 export const moveTaskSchema = z.object({
     taskId: z.string().trim().min(1, { message: 'Task ID is required' }),
     targetSectionId: z.string().trim().min(1, { message: 'Target section ID is required' }),
-    newSortOrder: z.number().min(0, { message: 'Sort order must be greater than or equal to 0' }),
-})
-
-export const reorderTasksSchema = z.object({
-    sectionId: z.string().trim().min(1, { message: 'Section ID is required' }),
-    taskIds: z.array(z.string().trim().min(1)).min(1, { message: 'At least one task ID is required' }),
+    targetSectionTaskIds: z.array(z.string().trim().min(1)).min(1, { message: 'At least one task ID is required' }),
+    sourceSectionId: z.string().trim().min(1).optional(),
+    sourceSectionTaskIds: z.array(z.string().trim().min(1)).optional(),
 })
