@@ -1,8 +1,11 @@
 'use server'
+import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/server"
 import { getCurrentUser } from "../getCurrentUser"
 import { createTaskSchema, updateTaskSchema, moveTaskSchema } from "@/lib/schemas/task"
 import z from "zod"
+
+const BOARD_PATH = '/organization/[orgId]/board/[boardId]'
 
 export async function createTask(unsafeData: z.infer<typeof createTaskSchema>) {
     const {success, data} = createTaskSchema.safeParse(unsafeData)
@@ -36,6 +39,7 @@ export async function createTask(unsafeData: z.infer<typeof createTaskSchema>) {
         return { error: true, message: `Failed to create task: ${error.message}`}
     }
 
+    revalidatePath(BOARD_PATH, 'page')
     return { 
         error: false, 
         task: {
@@ -83,6 +87,7 @@ export async function updateTask(id: string, unsafeData: z.infer<typeof updateTa
         return { error: true, message: 'Failed to update task' }
     }
 
+    revalidatePath(BOARD_PATH, 'page')
     return { 
         error: false, 
         data: {
@@ -141,5 +146,6 @@ export async function moveTask(unsafeData: z.infer<typeof moveTaskSchema>) {
         if (sourceError) return sourceError
     }
 
+    revalidatePath(BOARD_PATH, 'page')
     return { error: false, message: 'Task moved successfully' }
 }

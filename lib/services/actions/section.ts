@@ -34,7 +34,7 @@ export async function createSection(unsafeData: z.infer<typeof createSectionSche
         return { error: true, message: 'Failed to create section'}
     }
 
-    revalidatePath(`/board/${data.board_id}`)
+    revalidatePath('/organization/[orgId]/board/[boardId]', 'page')
     return { error: false, section}
 }
 
@@ -79,6 +79,6 @@ export async function updateSection(id: string, unsafeData: z.infer<typeof updat
         return { error: true, message: 'Failed to update section' }
     }
 
-    revalidatePath(`/board/${existingSection.board_id}`)
+    revalidatePath('/organization/[orgId]/board/[boardId]', 'page')
     return { error: false, data: section }
 }
