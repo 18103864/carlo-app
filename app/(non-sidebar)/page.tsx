@@ -1,5 +1,5 @@
 import OrganizationList from "@/components/organization/organization-list";
-import { getOrganizations } from "@/lib/services/actions/organization";
+import { getOrganizations } from "@/lib/services/queries/organization";
 import { getCurrentUser } from "@/lib/services/getCurrentUser";
 import { redirect } from "next/navigation";
 

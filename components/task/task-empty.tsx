@@ -6,7 +6,7 @@ const TaskEmpty = () => {
         <Empty className='md:p-4'>
             <EmptyHeader>
                 <EmptyMedia variant='icon'>
-                    <Clipboard />
+                    <Clipboard strokeWidth={1}/>
                 </EmptyMedia>
                 <EmptyTitle>No Tasks in this Section</EmptyTitle>
                 <EmptyDescription>

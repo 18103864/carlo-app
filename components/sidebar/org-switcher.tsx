@@ -2,41 +2,23 @@
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
-import { getOrganizationById, getOrganizations } from '@/lib/services/actions/organization'
-import { useEffect, useState } from 'react'
 import { ChevronsUpDown, Plus } from 'lucide-react'
-import Link from 'next/link'
 import { useOrg } from '@/context/org-context'
 import OrgLoader from './org-loader'
+import { Organization } from '@/lib/types'
 
-const OrgSwitcher = () => {
+interface OrgSwitcherProps {
+    organizations: Organization[]
+}
+
+const OrgSwitcher = ({ organizations }: OrgSwitcherProps) => {
     const router = useRouter()
     const { orgId, setOrgId } = useOrg()
-    const [organization, setOrganization] = useState<Awaited<ReturnType<typeof getOrganizationById>>['data']>(null)
-    const [organizations, setOrganizations] = useState<Awaited<ReturnType<typeof getOrganizations>>['data']>([])
-    const [isLoading, setIsLoading] = useState(false)
     const { isMobile } = useSidebar()
 
-    useEffect(() => {
-        getOrganizations().then(({ data }) => {
-            if (data) {
-                setOrganizations(data)
-            }
-        })
-    }, [])
+    const organization = organizations.find(org => org.id === orgId)
 
-    useEffect(() => {
-        if (orgId) {
-            setIsLoading(true)
-            getOrganizationById(orgId).then(({ data }) => {
-                setOrganization(data)
-            }).finally(() => {
-                setIsLoading(false)
-            })
-        }
-    }, [orgId])
-
-    if (isLoading || !organization) {
+    if (!organization) {
         return (
             <SidebarMenu>
                 <SidebarMenuItem>

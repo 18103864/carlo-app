@@ -1,6 +1,6 @@
 import SectionGrid from "@/components/section/section-grid";
-import { getBoardById } from "@/lib/services/actions/board";
-import { getSections } from "@/lib/services/actions/section";
+import { getBoardById } from "@/lib/services/queries/board";
+import { getSections } from "@/lib/services/queries/section";
 
 const BoardPage = async ({
     params

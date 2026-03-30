@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { createClient, supabase } from "@/lib/client";
+import { supabase } from "@/lib/client";
 import { useRouter } from "next/navigation";
 
 interface Profile {
@@ -65,7 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = async () => {
-        const supabase = createClient()
         await supabase.auth.signOut()
         router.push('/auth/login')
     };

@@ -28,9 +28,10 @@ type FormData = z.infer<typeof updateTaskSchema>
 interface UpdateTaskFormProps {
     task: Task
     onUpdate?: (updatedTask: Task) => void
+    disabled?: boolean
 }
 
-const UpdateTaskForm = ({ task, onUpdate }: UpdateTaskFormProps) => {
+const UpdateTaskForm = ({ task, onUpdate, disabled }: UpdateTaskFormProps) => {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
     
@@ -58,7 +59,7 @@ const UpdateTaskForm = ({ task, onUpdate }: UpdateTaskFormProps) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-6">
+                <Button variant="ghost" size="icon" className="size-6" disabled={disabled}>
                     <Pencil className="size-3" />
                     <span className="sr-only">Edit task</span>
                 </Button>

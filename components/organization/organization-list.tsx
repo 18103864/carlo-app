@@ -2,12 +2,10 @@
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '../ui/card'
-import { Boxes, Crown, FolderCodeIcon, PlusIcon } from 'lucide-react'
+import { Boxes, Crown } from 'lucide-react'
 import OrganizationHeader from './organization-header'
 import { Organization } from '@/lib/types'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty'
-import { Button } from '../ui/button'
-import { redirect } from 'next/navigation'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty'
 
 const OrganizationList = ({
     organizations,
@@ -44,7 +42,7 @@ const OrganizationList = ({
                 <Empty>
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
-                            <FolderCodeIcon />
+                            <Boxes strokeWidth={1}/>
                         </EmptyMedia>
                         <EmptyTitle>No Organizations Yet</EmptyTitle>
                         <EmptyDescription>
@@ -52,12 +50,6 @@ const OrganizationList = ({
                             your first organization.
                         </EmptyDescription>
                     </EmptyHeader>
-                    <EmptyContent className="flex-row justify-center gap-2">
-                        <Button size={'sm'} onClick={() => redirect('/create')}>
-                            <PlusIcon />
-                            New Organization
-                        </Button>
-                    </EmptyContent>
                 </Empty>
             ) : (
                 <div className={cn(
@@ -68,7 +60,7 @@ const OrganizationList = ({
                             <Card className="@container/card rounded-md py-4 hover:border-primary">
                                 <CardContent className='flex items-center gap-2 px-4 w-full'>
                                 <div className="rounded-full bg-primary text-primary-foreground w-10 aspect-square flex items-center justify-center">
-                                    <Boxes size={20}/>
+                                    <Boxes strokeWidth={1.25} size={20}/>
                                 </div>
                                 <div className='w-full'>
                                     <CardTitle className="w-full text-sm font-semibold tabular-nums flex items-center justify-between gap-1">
