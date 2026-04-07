@@ -1,7 +1,8 @@
 'use server'
 
+import { revalidatePath } from "next/cache"
 import { getCurrentUser } from "../getCurrentUser"
-import { createOrganizationSchema } from "@/lib/schemas/organizations"
+import { createOrganizationSchema, updateOrganizationSchema } from "@/lib/schemas/organizations"
 import { createClient } from "@/lib/server"
 import z from "zod"
 
@@ -34,4 +35,38 @@ export async function createOrganization(unsafeData: z.infer<typeof createOrgani
     }
     
     return { error: false, organization}
+}
+
+export async function updateOrganization(id: string, unsafeData: z.infer<typeof updateOrganizationSchema>) {
+    const { success, data } = updateOrganizationSchema.safeParse(unsafeData)
+    const user = await getCurrentUser()
+
+    if (!user) {
+        return { error: true, message: 'User is not authenticated' }
+    }
+
+    if (!id.trim()) {
+        return { error: true, message: 'Organization ID cannot be empty' }
+    }
+
+    if (!success) {
+        return { error: true, message: 'Invalid organization data' }
+    }
+
+    const supabase = await createClient()
+
+    const { data: organization, error } = await supabase
+        .from('organization')
+        .update({ name: data.name })
+        .eq('id', id)
+        .eq('owner_id', user.id)
+        .select()
+        .single()
+
+    if (error) {
+        return { error: true, message: 'Failed to update organization' }
+    }
+
+    revalidatePath(`/organization/${id}`)
+    return { error: false, organization }
 }
