@@ -45,3 +45,50 @@ export interface Task {
 export interface SectionWithTasks extends Section {
     tasks: Task[]
 }
+
+export interface Member {
+    member_id: string
+    org_id: string
+    role: string
+    status: string
+    created_at: string
+    user_profile: {
+        id: string
+        name: string | null
+        image_url: string | null
+    }
+}
+
+export interface Invitation {
+    id: string
+    org_id: string
+    email: string
+    role: string
+    status: string
+    invited_by: string
+    created_at: string
+    accepted_at: string | null
+    expires_at: string | null
+    invited_by_profile: {
+        id: string
+        name: string | null
+        image_url: string | null
+    }
+}
+
+/** Pending invitations for the current user (from `getInvitationsByUser`). */
+export interface UserInvitation {
+    id: string
+    org_id: string
+    email: string
+    role: string
+    status: string
+    invited_by: string
+    created_at: string
+    accepted_at: string | null
+    expires_at: string | null
+    organization: {
+        id: string
+        name: string
+    }
+}

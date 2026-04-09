@@ -56,7 +56,7 @@ const UserButton = () => {
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">{profile.name}</span>
-                                    <span className="truncate text-xs">{user?.email}</span>
+                                    <span className="truncate text-xs">{profile.email}</span>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
@@ -72,9 +72,11 @@ const UserButton = () => {
                                 <CreditCard />
                                 Billing
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Bell />
-                                Notifications
+                            <DropdownMenuItem asChild>
+                                <Link href="/invites">
+                                    <Bell />
+                                    Invites
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />

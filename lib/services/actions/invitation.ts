@@ -1,0 +1,53 @@
+'use server'
+
+import { revalidatePath } from "next/cache"
+import { getCurrentUser } from "../getCurrentUser"
+import { createClient } from "@/lib/server"
+import { createInvitationSchema } from "@/lib/schemas/invitation"
+import z from "zod"
+
+export async function createInvitation(organizationId: string, unsafeData: z.infer<typeof createInvitationSchema>) {
+    const { success, data } = createInvitationSchema.safeParse(unsafeData)
+    const user = await getCurrentUser()
+
+    if (!user) {
+        return { error: true, message: 'User is not authenticated' }
+    }
+
+    if (!organizationId.trim()) {
+        return { error: true, message: 'Organization ID cannot be empty' }
+    }
+
+    if (!success) {
+        return { error: true, message: 'Invalid invitation data' }
+    }
+
+    const supabase = await createClient()
+
+    const { data: existing } = await supabase
+        .from("organization_invitation")
+        .select("id")
+        .eq("org_id", organizationId)
+        .eq("email", data.email.toLowerCase())
+        .eq("status", "pending")
+        .single()
+
+    if (existing) {
+        return { error: true, message: 'An invitation has already been sent to this email' }
+    }
+
+    const { error } = await supabase.from("organization_invitation").insert({
+        org_id: organizationId,
+        email: data.email.toLowerCase(),
+        role: data.role,
+        invited_by: user.id,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    })
+
+    if (error) {
+        return { error: true, message: `Failed to create invitation: ${error.message}` }
+    }
+
+    revalidatePath(`/organization/${organizationId}/members`)
+    return { error: false, message: 'Invitation sent successfully' }
+}

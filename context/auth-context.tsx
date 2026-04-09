@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 interface Profile {
     id: string;
     name: string;
+    email: string;
     image_url: string;
     created_at: string;
     updated_at: string;

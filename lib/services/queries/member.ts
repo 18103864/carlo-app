@@ -15,8 +15,9 @@ export async function getMembers(organizationId: string) {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from('organization_member')
-        .select('*')
+        .select('*, user_profile:member_id(id, name, image_url)')
         .eq('org_id', organizationId)
+        .order('created_at', { ascending: true })
 
     if (error) {
         return { error: true, message: 'Failed to get members' }

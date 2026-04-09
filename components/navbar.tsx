@@ -9,7 +9,7 @@ import { useAuth } from '@/context/auth-context'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu'
 
 const Navbar = () => {
-    const {user, profile, profileLoading, logout} = useAuth()
+    const {profile, profileLoading, logout} = useAuth()
     return (
         <nav className='h-header flex shrink-0 sticky top-0 items-center border-b '>
             <div className="flex items-center justify-between h-full pr-3 flex-1 overflow-x-auto gap-x-8 pl-4">
@@ -67,7 +67,7 @@ const Navbar = () => {
                                     <div className="grid flex-1 text-left text-sm leading-tight">
                                         <span className="truncate font-medium">{profile?.name}</span>
                                         <span className="truncate text-xs text-muted-foreground">
-                                            {user?.email}
+                                            {profile?.email}
                                         </span>
                                     </div>
                                 </div>
@@ -84,9 +84,11 @@ const Navbar = () => {
                                     <CreditCard />
                                     Billing
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Bell />
-                                    Notifications
+                                <DropdownMenuItem asChild>
+                                    <Link href="/invites">
+                                        <Bell />
+                                        Invites
+                                    </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
