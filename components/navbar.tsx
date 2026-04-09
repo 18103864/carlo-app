@@ -74,9 +74,11 @@ const Navbar = () => {
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
-                                <DropdownMenuItem>
-                                    <User />
-                                    Account
+                                <DropdownMenuItem asChild>
+                                    <Link href="/profile">
+                                        <User />
+                                        Account
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <CreditCard />

@@ -1,6 +1,7 @@
 import BoardList from "@/components/board/board-list"
 import { getBoards } from "@/lib/services/queries/board"
 import { getOrganizationById } from "@/lib/services/queries/organization"
+import { notFound } from "next/navigation"
 
 const organizationPage = async ({
     params
@@ -11,7 +12,10 @@ const organizationPage = async ({
 }) => {
     const {orgId} = await params
 
-    const {data: organization} = await getOrganizationById(orgId)
+    const { error, data: organization } = await getOrganizationById(orgId)
+    if (error || !organization) {
+        notFound()
+    }
     const boardsPromise = getBoards(orgId)
 
     return (

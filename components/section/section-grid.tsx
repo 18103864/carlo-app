@@ -29,7 +29,7 @@ const SectionGrid = async ({ board, sections }: SectionGridProps) => {
 
     return (
         <div className='h-full flex flex-col'>        
-            <Button variant={'ghost'} size={'xs'} className='ml-4 w-fit' asChild>
+            <Button variant={'ghost'} size={'xs'} className='ml-4 mt-4 w-fit' asChild>
                 <Link href={`/organization/${board.org_id}`}>
                     <ArrowLeft />
                     Back to boards

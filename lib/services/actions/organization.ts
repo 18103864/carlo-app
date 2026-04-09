@@ -33,7 +33,22 @@ export async function createOrganization(unsafeData: z.infer<typeof createOrgani
     if(error) {
         return { error: true, message: `Failed to create organization: ${error.message}`}
     }
-    
+
+    const { error: memberError } = await supabase
+        .from('organization_member')
+        .insert({
+            org_id: organization.id,
+            member_id: user.id,
+            role: 'owner',
+            status: 'accepted',
+        })
+
+    if (memberError) {
+        await supabase.from('organization').delete().eq('id', organization.id)
+        return { error: true, message: `Failed to add owner as member: ${memberError.message}` }
+    }
+
+    revalidatePath(`/`)
     return { error: false, organization}
 }
 

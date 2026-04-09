@@ -3,7 +3,8 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { useAuth } from '@/context/auth-context'
-import { BadgeCheck, CreditCard, Bell, Ellipsis, Sparkles, LogOut } from 'lucide-react'
+import { CreditCard, Bell, Ellipsis, LogOut, User } from 'lucide-react'
+import Link from 'next/link'
 import UserLoader from './user-loader'
 
 const UserButton = () => {
@@ -28,7 +29,7 @@ const UserButton = () => {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                            className="group-data-[collapsible=icon]:rounded-full! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-full border">
                                 <AvatarImage src={profile.image_url} alt={profile.name} />
@@ -60,32 +61,27 @@ const UserButton = () => {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem>
-                                    <Sparkles />
-                                    Upgrade to Pro
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem>
-                                        <BadgeCheck />
-                                        Account
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <CreditCard />
-                                        Billing
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Bell />
-                                        Notifications
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={logout}>
-                                <LogOut />
-                                Log out
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem asChild>
+                                <Link href="/profile">
+                                    <User />
+                                    Account
+                                </Link>
                             </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <CreditCard />
+                                Billing
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <Bell />
+                                Notifications
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                            <LogOut />
+                            Log out
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>
