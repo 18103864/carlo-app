@@ -1,5 +1,5 @@
 'use client'
-import { CreditCard, Inbox, Presentation, Settings, Users } from 'lucide-react';
+import { Inbox, Presentation, Settings, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
 import Link from 'next/link';
@@ -16,7 +16,7 @@ const Navigation = () => {
             icon: Presentation
         },
         {
-            title: 'Inbox',
+            title: 'Messages',
             pathname: `/organization/${orgId}/inbox`,
             icon: Inbox
         },
