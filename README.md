@@ -2,7 +2,7 @@
 
 A full-stack, multi-tenant project management platform built with **Next.js 16**, **React 19**, and **Supabase**. Organizations can create Kanban boards, manage tasks with drag-and-drop, invite team members by email, and collaborate in real time -- all behind passwordless magic-link authentication.
 
-> **Live demo:** _coming soon_ &nbsp;|&nbsp; **Built by:** Cahrl Louize Loyloy
+> **Live demo:** _https://carlo-app-indol.vercel.app_ &nbsp;|&nbsp; **Built by:** Cahrl Louize Loyloy
 
 ---
 
