@@ -39,7 +39,7 @@ const OrganizationSettingsForm = ({ organization }: OrganizationSettingsFormProp
     }
 
     return (
-        <Card className='max-w-2xl mx-auto'>
+        <Card>
             <CardHeader>
                 <CardTitle>Organization Name</CardTitle>
                 <CardDescription>

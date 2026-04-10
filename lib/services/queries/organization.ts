@@ -13,7 +13,6 @@ export async function getOrganizations() {
     const { data, error } = await supabase
         .from('organization')
         .select('*')
-        .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
 
     if(error) {
