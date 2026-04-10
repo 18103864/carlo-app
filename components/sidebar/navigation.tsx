@@ -24,6 +24,11 @@ const Navigation = () => {
 
     const ConfigurationMenu = [
         {
+            title: 'Members',
+            pathname: `/organization/${orgId}/members`,
+            icon: Users
+        },
+        {
             title: 'Settings',
             pathname: `/organization/${orgId}/settings`,
             icon: Settings
@@ -33,11 +38,6 @@ const Navigation = () => {
         //     pathname: `/organization/${orgId}/billing`,
         //     icon: CreditCard
         // },
-        {
-            title: 'Members',
-            pathname: `/organization/${orgId}/members`,
-            icon: Users
-        }
     ]
 
     const pathname = usePathname();

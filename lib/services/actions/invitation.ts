@@ -51,3 +51,28 @@ export async function createInvitation(organizationId: string, unsafeData: z.inf
     revalidatePath(`/organization/${organizationId}/members`)
     return { error: false, message: 'Invitation sent successfully' }
 }
+
+export async function acceptInvitation(invitationId: string) {
+    const user = await getCurrentUser()
+
+    if (!user) {
+        return { error: true, message: 'User is not authenticated' }
+    }
+
+    if (!invitationId.trim()) {
+        return { error: true, message: 'Invitation ID cannot be empty' }
+    }
+
+    const supabase = await createClient()
+
+    const { error } = await supabase.rpc('accept_organization_invitation', {
+        invitation_id: invitationId,
+    })
+
+    if (error) {
+        return { error: true, message: error.message }
+    }
+
+    revalidatePath('/invites')
+    return { error: false, message: 'Invitation accepted successfully' }
+}

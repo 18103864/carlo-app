@@ -26,3 +26,20 @@ export async function getProfile(id: string) {
 
     return {error: false, data}
 }
+
+export async function getAllProfiles() {
+    const user = await getCurrentUser()
+
+    if(!user) {
+        return { error: true, message: 'User is not authenticated'}
+    }
+
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('user_profile').select('*')
+    
+    if(error){
+        return { error: true, message: 'Failed to get all profiles'}
+    }
+
+    return { error: false, data}
+}

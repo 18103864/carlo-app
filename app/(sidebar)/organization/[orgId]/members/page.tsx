@@ -8,10 +8,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Invitation, Member } from "@/lib/types"
+import { Invitation, Member, UserProfile } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import { getMembers } from "@/lib/services/queries/member"
 import { getInvitationsByOrg } from "@/lib/services/queries/invitation"
+import { getAllProfiles } from "@/lib/services/queries/profile"
 import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
 import { Plus } from "lucide-react"
@@ -51,14 +52,22 @@ const MembersPage = async ({
     params: Promise<{ orgId: string }>
 }) => {
     const { orgId } = await params
-    const [{ data: members, error }, { data: invitations, error: invitationsError }] = await Promise.all([
+    const [{ data: members, error }, { data: invitations, error: invitationsError }, { data: profiles }] = await Promise.all([
         getMembers(orgId),
         getInvitationsByOrg(orgId),
+        getAllProfiles(),
     ])
 
     if (error || !members) {
         notFound()
     }
+
+    const memberIds = new Set((members as Member[]).map((m) => m.member_id))
+    const pendingInvitationEmails = new Set(
+        (invitations as Invitation[] | undefined)
+            ?.filter((i) => i.status === "pending")
+            .map((i) => i.email.toLowerCase()) ?? []
+    )
 
     return (
         <div className="max-w-4xl mx-auto w-full min-h-full items-stretch px-4 lg:px-10 py-6 space-y-8">
@@ -69,7 +78,12 @@ const MembersPage = async ({
                         Manage and view your organization members.
                     </p>
                 </div>
-                <InviteMemberDialog organizationId={orgId}>
+                <InviteMemberDialog
+                    organizationId={orgId}
+                    profiles={(profiles as UserProfile[] | undefined) ?? []}
+                    memberIds={[...memberIds]}
+                    pendingInvitationEmails={[...pendingInvitationEmails]}
+                >
                     <Button size="sm">
                         <Plus />
                         Invite Member

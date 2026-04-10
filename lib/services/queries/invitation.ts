@@ -17,6 +17,7 @@ export async function getInvitationsByOrg(organizationId: string) {
         .from('organization_invitation')
         .select('*, invited_by_profile:invited_by(id, name, image_url)')
         .eq('org_id', organizationId)
+        .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
     if (error) {

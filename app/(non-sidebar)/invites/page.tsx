@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
     Table,
     TableBody,
@@ -8,11 +7,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import InvitationActions from "@/components/invitation/invitation-actions"
 import { getCurrentUser } from "@/lib/services/getCurrentUser"
 import { getInvitationsByUser } from "@/lib/services/queries/invitation"
 import { UserInvitation } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
-import { Check, X } from "lucide-react"
 import { redirect } from "next/navigation"
 
 function getRoleBadgeVariant(role: string) {
@@ -52,7 +51,8 @@ const InvitesPage = async () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Organization</TableHead>
+                                    <TableHead>Invitation ID</TableHead>
+                                    {/*TODO: Change To Org Name Later*/}
                                     <TableHead>Role</TableHead>
                                     <TableHead>Invited</TableHead>
                                     <TableHead>Expires</TableHead>
@@ -67,7 +67,7 @@ const InvitesPage = async () => {
                                           <TableRow key={invitation.id}>
                                               <TableCell>
                                                   <p className="text-sm font-medium leading-none">
-                                                      {invitation.organization.name}
+                                                      {invitation.id}
                                                   </p>
                                               </TableCell>
                                               <TableCell>
@@ -87,14 +87,7 @@ const InvitesPage = async () => {
                                                       : "—"}
                                               </TableCell>
                                               <TableCell className="text-right">
-                                                  <div className="flex justify-end gap-2">
-                                                      <Button type="button" size="sm">
-                                                          <Check />
-                                                      </Button>
-                                                      <Button type="button" size="sm" variant="outline" className="text-red-300 hover:text-red-500 border-red-500 dark:border-red-500">
-                                                          <X />
-                                                      </Button>
-                                                  </div>
+                                                  <InvitationActions invitationId={invitation.id} />
                                               </TableCell>
                                           </TableRow>
                                       ))
