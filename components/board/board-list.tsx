@@ -101,7 +101,7 @@ function BoardListWithData({
     const [boards, setBoards] = useState<Board[]>(serverBoards || [])
 
     useEffect(() => {
-        setBoards(serverBoards || [])
+        setBoards(serverBoards ?? [])
     }, [serverBoards])
 
     const [optimisticBoards, addOptimisticBoard] = useOptimistic(

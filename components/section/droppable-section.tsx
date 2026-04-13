@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Section, Task } from '@/lib/types'
 import CreateTaskForm from '../task/create-task-form'
 import TaskEmpty from '../task/task-empty'
@@ -28,6 +28,10 @@ const DroppableSection = ({
     syncingTaskId 
 }: DroppableSectionProps) => {
     const [currentSection, setCurrentSection] = useState(section)
+
+    useEffect(() => {
+        setCurrentSection(section)
+    }, [section])
     
     const { setNodeRef, isOver } = useDroppable({
         id: section.id,

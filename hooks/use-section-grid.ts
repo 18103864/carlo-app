@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useOptimistic, useState, useTransition } from 'react'
+import { useCallback, useEffect, useOptimistic, useRef, useState, useTransition } from 'react'
 import { Board, SectionWithTasks, Task } from '@/lib/types'
 import { useAuth } from '@/context/auth-context'
 import { createSection } from '@/lib/services/actions/section'
 import { createSectionSchema } from '@/lib/schemas/section'
 import { createTaskSchema } from '@/lib/schemas/task'
 import { createTask, moveTask } from '@/lib/services/actions/task'
+import { createClient } from '@/lib/client'
 import z from 'zod'
 import {
     DragEndEvent,
@@ -45,6 +46,94 @@ export function useSectionGrid(board: Board, initialSections: SectionWithTasks[]
     useEffect(() => {
         setSections(initialSections)
     }, [initialSections])
+
+    const sectionIdsRef = useRef<Set<string>>(new Set(initialSections.map(s => s.id)))
+
+    useEffect(() => {
+        sectionIdsRef.current = new Set(sections.map(s => s.id))
+    }, [sections])
+
+    useEffect(() => {
+        const supabase = createClient()
+
+        const fetchSectionsWithTasks = async () => {
+            const [sectionsResult, tasksResult] = await Promise.all([
+                supabase
+                    .from('section')
+                    .select('*')
+                    .eq('board_id', board.id)
+                    .order('sort_order', { ascending: true }),
+                supabase
+                    .from('task')
+                    .select('*, creator:creator_id(name), assignee:assignee_id(name), section:section_id!inner(board_id)')
+                    .eq('section.board_id', board.id)
+                    .order('sort_order', { ascending: false })
+            ])
+
+            if (sectionsResult.error || tasksResult.error) return
+
+            const tasks: Task[] = tasksResult.data.map(task => ({
+                ...task,
+                creator_name: task.creator?.name,
+                assignee_name: task.assignee?.name,
+                creator: undefined,
+                assignee: undefined,
+                section: undefined,
+            }))
+
+            const tasksBySection = tasks.reduce((acc, task) => {
+                if (!acc[task.section_id]) acc[task.section_id] = []
+                acc[task.section_id].push(task)
+                return acc
+            }, {} as Record<string, Task[]>)
+
+            setSections(sectionsResult.data.map(section => ({
+                ...section,
+                tasks: tasksBySection[section.id] || []
+            })))
+        }
+
+        const channel = supabase
+            .channel(`board:${board.id}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'board',
+                filter: `id=eq.${board.id}`
+            }, async () => {
+                const { data, error } = await supabase
+                    .from('board')
+                    .select('*')
+                    .eq('id', board.id)
+                    .single()
+                if (!error && data) setCurrentBoard(data)
+            })
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'section',
+                filter: `board_id=eq.${board.id}`
+            }, () => {
+                fetchSectionsWithTasks()
+            })
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'task',
+            }, (payload) => {
+                const sectionId =
+                    (payload.new as Record<string, unknown>)?.section_id ??
+                    (payload.old as Record<string, unknown>)?.section_id
+                if (!sectionId || sectionIdsRef.current.has(sectionId as string)) {
+                    setTimeout(() => fetchSectionsWithTasks(), 100)
+                }
+            })
+            .subscribe()
+
+        return () => {
+            channel.unsubscribe()
+        }
+    }, [board.id])
 
     const [optimisticSections, addOptimisticSection] = useOptimistic(
         sections,
