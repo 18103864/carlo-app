@@ -5,20 +5,28 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { Search, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { MOCK_CONVERSATIONS } from './mock-data'
+import { Search } from 'lucide-react'
+import { cn, formatDate } from '@/lib/utils'
 import { useOrg } from '@/context/org-context'
+import CreateRoomDialog from './create-room-dialog'
+import type { ChatRoomWithLatest, Member } from '@/lib/types'
 
-export default function ConversationList() {
+interface ConversationListProps {
+    rooms: ChatRoomWithLatest[]
+    members: Member[]
+}
+
+function getInitials(name: string) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+}
+
+export default function ConversationList({ rooms, members }: ConversationListProps) {
     const [search, setSearch] = useState('')
     const { roomId } = useParams<{ roomId?: string }>()
     const { orgId } = useOrg()
 
-    const filtered = MOCK_CONVERSATIONS.filter(
-        (c) =>
-            c.name.toLowerCase().includes(search.toLowerCase()) ||
-            c.lastMessage.toLowerCase().includes(search.toLowerCase())
+    const filtered = rooms.filter((room) =>
+        room.name.toLowerCase().includes(search.toLowerCase())
     )
 
     return (
@@ -30,9 +38,7 @@ export default function ConversationList() {
         >
             <div className="flex items-center justify-between px-4 h-14 shrink-0">
                 <h1 className="text-lg font-semibold tracking-tight">Messages</h1>
-                <button className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-                    <Plus className="size-4" />
-                </button>
+                {orgId && <CreateRoomDialog orgId={orgId} members={members} />}
             </div>
 
             <div className="px-3 pb-3">
@@ -51,43 +57,48 @@ export default function ConversationList() {
             <Separator />
 
             <div className="flex-1 overflow-y-auto">
-                {filtered.map((conv) => (
-                    <Link
-                        key={conv.id}
-                        href={`/organization/${orgId}/inbox/${conv.id}`}
-                        className={cn(
-                            'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors border-l-2 border-l-transparent',
-                            roomId === conv.id
-                                ? 'bg-accent border-l-primary'
-                                : 'hover:bg-accent/50'
-                        )}
-                    >
-                        <div className="relative shrink-0">
-                            <Avatar>
-                                <AvatarFallback className={cn(conv.color, 'text-white text-xs font-medium')}>
-                                    {conv.initials}
-                                </AvatarFallback>
-                            </Avatar>
-                            {conv.online && (
-                                <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-card bg-emerald-500" />
+                {filtered.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                        {rooms.length === 0 ? 'No conversations yet' : 'No results found'}
+                    </p>
+                )}
+                {filtered.map((room) => {
+                    const lastMsg = room.latest_message
+                    const preview = lastMsg
+                        ? `${lastMsg.author?.name ?? 'Unknown'}: ${lastMsg.text}`
+                        : 'No messages yet'
+                    const time = lastMsg
+                        ? formatDate(lastMsg.created_at)
+                        : formatDate(room.created_at)
+
+                    return (
+                        <Link
+                            key={room.id}
+                            href={`/organization/${orgId}/inbox/${room.id}`}
+                            className={cn(
+                                'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors border-l-2 border-l-transparent',
+                                roomId === room.id
+                                    ? 'bg-accent border-l-primary'
+                                    : 'hover:bg-accent/50'
                             )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline justify-between gap-2">
-                                <span className="text-sm font-medium truncate">{conv.name}</span>
-                                <span className="text-[11px] text-muted-foreground shrink-0">{conv.timestamp}</span>
+                        >
+                            <div className="relative shrink-0">
+                                <Avatar>
+                                    <AvatarFallback className="text-xs font-medium">
+                                        {getInitials(room.name)}
+                                    </AvatarFallback>
+                                </Avatar>
                             </div>
-                            <div className="flex items-center justify-between gap-2 mt-0.5">
-                                <p className="text-xs text-muted-foreground truncate">{conv.lastMessage}</p>
-                                {conv.unreadCount > 0 && (
-                                    <span className="flex shrink-0 items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
-                                        {conv.unreadCount}
-                                    </span>
-                                )}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline justify-between gap-2">
+                                    <span className="text-sm font-medium truncate">{room.name}</span>
+                                    <span className="text-[11px] text-muted-foreground shrink-0">{time}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate mt-0.5">{preview}</p>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+                        </Link>
+                    )
+                })}
             </div>
         </aside>
     )
