@@ -10,6 +10,8 @@ A full-stack, multi-tenant project management platform built with **Next.js 16**
 
 - **Multi-tenant architecture** -- users create and switch between organizations, each with isolated boards, members, and permissions.
 - **Kanban boards with drag-and-drop** -- powered by dnd-kit with optimistic UI updates and server-side persistence.
+- **Real-time collaboration** -- Supabase Realtime powers live board updates, task/section syncing, and team messaging with presence indicators.
+- **Team messaging** -- full chat system with chat rooms, member management, broadcast-based live message delivery, and online presence tracking.
 - **Passwordless auth** -- Supabase magic-link OTP flow with automatic session refresh and profile gating via Next.js proxy middleware.
 - **Server Actions everywhere** -- zero REST API routes; all mutations go through type-safe, Zod-validated server actions with `revalidatePath`.
 - **Role-based invitation system** -- invite members by email (admin/member roles), accept invitations, with duplicate prevention and atomic acceptance via Postgres RPC.
@@ -29,7 +31,8 @@ A full-stack, multi-tenant project management platform built with **Next.js 16**
 | **Components** | [Radix UI](https://www.radix-ui.com/) primitives, [Lucide](https://lucide.dev/) icons, CVA variants |
 | **Forms** | [React Hook Form](https://react-hook-form.com/) + [Zod 4](https://zod.dev/) schema validation |
 | **Drag & Drop** | [@dnd-kit](https://dndkit.com/) (core + sortable) |
-| **Backend / DB** | [Supabase](https://supabase.com/) (PostgreSQL, Auth, Row-Level Security, RPC) |
+| **Backend / DB** | [Supabase](https://supabase.com/) (PostgreSQL, Auth, Row-Level Security, RPC, Realtime) |
+| **Real-time** | Supabase Realtime -- Postgres Changes (boards, sections, tasks), Broadcast + Presence (chat) |
 | **Auth** | Supabase Auth -- email magic-link OTP, cookie-based SSR sessions |
 | **Theming** | [next-themes](https://github.com/pacocoursey/next-themes) (class strategy) |
 
@@ -41,19 +44,22 @@ A full-stack, multi-tenant project management platform built with **Next.js 16**
 ┌─────────────────────────────────────────────────────────┐
 │                        Client                           │
 │  React 19 · shadcn/ui · dnd-kit · React Hook Form       │
+│  Supabase Realtime (Postgres Changes, Broadcast,        │
+│  Presence)                                              │
 └────────────────────────┬────────────────────────────────┘
                          │  Server Actions (mutations)
                          │  Server Components (queries)
+                         │  WebSocket (Realtime channels)
 ┌────────────────────────▼────────────────────────────────┐
 │                   Next.js 16 Server                     │
 │  Proxy (session refresh + auth redirect)                │
 │  Server Actions (Zod validation → Supabase mutations)   │
 │  Server Components (data fetching → RSC streaming)      │
 └────────────────────────┬────────────────────────────────┘
-                         │  PostgREST / Auth / RPC
+                         │  PostgREST / Auth / RPC / Realtime
 ┌────────────────────────▼────────────────────────────────┐
 │                      Supabase                           │
-│  PostgreSQL · Row-Level Security · Auth · Edge Functions │
+│  PostgreSQL · Row-Level Security · Auth · Realtime      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -68,6 +74,10 @@ A full-stack, multi-tenant project management platform built with **Next.js 16**
 4. **Optimistic updates with rollback** -- The `useSectionGrid` hook uses React 19's `useOptimistic` for sections and manual optimistic state for tasks. Failed mutations automatically roll back the UI to the server state.
 
 5. **Atomic invitation acceptance** -- Invitation acceptance is delegated to a Postgres RPC (`accept_organization_invitation`) to guarantee atomicity and enforce security constraints at the database level.
+
+6. **Three-tier Realtime strategy** -- Board lists use `postgres_changes` scoped by `org_id`; board detail (sections + tasks) uses `postgres_changes` scoped by `board_id`; chat uses broadcast + presence channels per room for low-latency message delivery and online indicators.
+
+7. **Chat via Postgres RPCs** -- Room creation (`create_chat_room`) and member management (`add_chat_room_members`) are delegated to Postgres RPCs, keeping membership logic atomic and secure at the database level.
 
 ---
 
@@ -87,7 +97,7 @@ carlo-app/
 │   │       ├── board/[boardId]/  # Kanban board (sections + tasks)
 │   │       ├── members/          # Member management + invitations
 │   │       ├── settings/         # Organization settings
-│   │       └── inbox/            # Messaging (UI prototype)
+│   │       └── inbox/            # Real-time team messaging
 │   ├── auth/
 │   │   ├── login/                # Magic-link login
 │   │   ├── setup/                # Profile name setup (first-time)
@@ -99,7 +109,7 @@ carlo-app/
 │   ├── section/                  # Section grid, droppable sections, CRUD forms
 │   ├── task/                     # Task items, sortable tasks, overlay, CRUD forms
 │   ├── organization/             # Org list, settings form, invite dialog
-│   ├── inbox/                    # Chat view, conversation list, mock data
+│   ├── inbox/                    # Chat view, conversation list, room/member dialogs
 │   ├── invitation/               # Accept/decline invitation actions
 │   ├── profile/                  # Profile edit form
 │   ├── sidebar/                  # App sidebar, nav, org switcher, user button
@@ -108,7 +118,8 @@ carlo-app/
 │   ├── auth-context.tsx          # Current user + profile provider
 │   └── org-context.tsx           # Active organization context
 ├── hooks/
-│   ├── use-section-grid.ts       # DnD + optimistic state for Kanban boards
+│   ├── use-section-grid.ts       # DnD + optimistic state + Realtime for Kanban boards
+│   ├── use-realtime-chat.ts      # Broadcast + Presence for live chat messaging
 │   └── use-mobile.ts             # Responsive breakpoint hook
 ├── lib/
 │   ├── client.ts                 # Supabase browser client
@@ -116,7 +127,7 @@ carlo-app/
 │   ├── middleware.ts              # Session refresh + auth redirect logic
 │   ├── types.ts                  # Domain type definitions
 │   ├── utils.ts                  # cn() utility
-│   ├── schemas/                  # Zod validation schemas per domain
+│   ├── schemas/                  # Zod validation schemas per domain (board, section, task, chat)
 │   └── services/
 │       ├── getCurrentUser.ts     # Auth guard (shared by actions + queries)
 │       ├── actions/              # Server Actions (create, update, move, delete)
@@ -147,6 +158,20 @@ Tasks support:
 - Duplicate invite prevention at the application level
 - Accept invitations from a dedicated invitations page
 - Member list with profile details
+
+### Real-time Messaging
+Each organization has a built-in messaging system:
+- **Chat rooms** -- create named rooms and add organization members
+- **Live message delivery** -- messages are persisted via server actions and broadcast to connected clients in real time
+- **Online presence** -- see how many users are currently active in a room via Supabase Presence
+- **Member management** -- add members to rooms after creation with a dedicated dialog
+- **Conversation list** -- rooms sorted by latest activity with search filtering
+
+### Real-time Updates
+The platform uses Supabase Realtime across three layers:
+- **Board list** -- `postgres_changes` on the `board` table scoped by organization; any board creation, update, or deletion is reflected live for all org members
+- **Board detail** -- `postgres_changes` on `board`, `section`, and `task` tables scoped by board; section and task changes (including cross-section moves) trigger automatic refetches
+- **Chat** -- broadcast channels per room for instant message delivery; presence channels for online user tracking
 
 ### Authentication Flow
 1. User enters email on the login page
@@ -218,6 +243,26 @@ task
 ├── due_date
 ├── priority
 └── timestamps
+
+chat_room
+├── id (PK)
+├── name
+├── org_id → organization.id
+├── created_by → user_profile.id
+└── timestamps
+
+chat_room_member
+├── chat_room_id → chat_room.id
+├── member_id → user_profile.id
+├── role
+└── joined_at
+
+message
+├── id (PK)
+├── chat_room_id → chat_room.id
+├── author_id → user_profile.id
+├── text
+└── created_at
 ```
 
 ---
@@ -255,7 +300,12 @@ task
 
 4. **Set up the database**
 
-   In your Supabase dashboard, create the tables described in the [Data Model](#data-model) section and enable Row-Level Security. Create the `accept_organization_invitation` RPC function to handle atomic invitation acceptance.
+   In your Supabase dashboard, create the tables described in the [Data Model](#data-model) section and enable Row-Level Security. Create the following RPC functions:
+   - `accept_organization_invitation` -- atomic invitation acceptance
+   - `create_chat_room` -- atomic chat room creation with initial membership
+   - `add_chat_room_members` -- add members to an existing chat room
+
+   Enable **Realtime** on the `board`, `section`, and `task` tables for live board updates.
 
 5. **Start the development server**
 
@@ -278,6 +328,6 @@ task
 
 ## Roadmap
 
-- [ ] Real-time messaging (replace mock data with Supabase Realtime)
-- [ ] Decline invitation flow
-- [ ] Real-time board updates (Supabase Realtime subscriptions)
+- [x] ~~Real-time messaging (replace mock data with Supabase Realtime)~~
+- [x] ~~Real-time board updates (Supabase Realtime subscriptions)~~
+- [ ] Real-time conversation list updates (live sidebar refresh on new messages)
