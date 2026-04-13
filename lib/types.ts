@@ -85,6 +85,36 @@ export interface Invitation {
     }
 }
 
+export interface ChatRoom {
+    id: string
+    org_id: string
+    name: string
+    creator_id: string
+    created_at: string
+}
+
+export interface ChatRoomWithLatest extends ChatRoom {
+    latest_message: {
+        text: string
+        created_at: string
+        author: { id: string; name: string | null } | null
+    } | null
+    members: {
+        member_id: string
+        role: string
+        user_profile: { id: string; name: string | null; image_url: string | null }
+    }[]
+}
+
+export interface ChatMessage {
+    id: string
+    chat_room_id: string
+    author_id: string
+    text: string
+    created_at: string
+    author: { id: string; name: string | null; image_url: string | null } | null
+}
+
 /** Pending invitations for the current user (from `getInvitationsByUser`). */
 export interface UserInvitation {
     id: string

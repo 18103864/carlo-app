@@ -1,5 +1,5 @@
 'use client'
-import { createContext, Suspense, use, useContext, useOptimistic, startTransition } from 'react'
+import { createContext, Suspense, use, useContext, useOptimistic, startTransition, useState, useEffect } from 'react'
 import { Board, Organization } from '@/lib/types'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardTitle } from '../ui/card'
@@ -8,6 +8,7 @@ import BoardsListLoader from './board-list-loader'
 import { formatDate } from '@/lib/utils'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty'
 import { Presentation } from 'lucide-react'
+import { createClient } from '@/lib/client'
 
 type BoardsResponse = {
     error: boolean
@@ -96,11 +97,50 @@ function BoardListWithData({
     boardsPromise: Promise<BoardsResponse>
     organization: Organization
 }) {
-    const { data: boards } = use(boardsPromise)
+    const { data: serverBoards } = use(boardsPromise)
+    const [boards, setBoards] = useState<Board[]>(serverBoards || [])
+
+    useEffect(() => {
+        setBoards(serverBoards ?? [])
+    }, [serverBoards])
+
     const [optimisticBoards, addOptimisticBoard] = useOptimistic(
-        boards || [],
-        (state, newBoard: Board) => [newBoard, ...state]
+        boards,
+        (state, newBoard: Board) => 
+            state.some(b => b.id === newBoard.id) ? state : [newBoard, ...state]
     )
+
+    useEffect(() => {
+        const supabase = createClient()
+
+        const channel = supabase
+            .channel(`boards:${organization.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'board',
+                filter: `org_id=eq.${organization.id}`
+            }, async () => {
+                const { data, error } = await supabase
+                    .from('board')
+                    .select('*, user_profile:creator_id(name)')
+                    .eq('org_id', organization.id)
+                    .order('created_at', { ascending: false })
+
+                if (!error && data) {
+                    setBoards(data.map(b => ({
+                        ...b,
+                        creator_name: (b.user_profile as { name: string | null } | null)?.name,
+                        user_profile: undefined,
+                    })))
+                }
+            })
+            .subscribe()
+
+        return () => {
+            channel.unsubscribe()
+        }
+    }, [organization.id])
 
     function handleBoardCreated(board: Board) {
         startTransition(() => {

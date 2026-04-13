@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Task } from '@/lib/types'
 import { Badge } from '../ui/badge'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,11 @@ interface TaskItemProps {
 
 const TaskItem = ({ task }: TaskItemProps) => {
     const [currentTask, setCurrentTask] = useState(task)
+
+    useEffect(() => {
+        setCurrentTask(task)
+    }, [task])
+
     const isPending = currentTask.id.startsWith('optimistic-')
 
     return (
