@@ -12,6 +12,7 @@ import { useRealtimeChat } from '@/hooks/use-realtime-chat'
 import type { ChatMessage } from '@/lib/types'
 import type { Member } from '@/lib/types'
 import AddMembersDialog from './add-members-dialog'
+import { supabase } from '@/lib/client'
 
 interface ChatViewProps {
     roomId: string
@@ -90,6 +91,21 @@ export default function ChatView({ roomId, roomName, initialMessages, roomMember
                 prev.map((m) => (m.id === optimisticMsg.id ? result.data! : m))
             )
             broadcast(result.data)
+            supabase.channel(`org:${orgId}:conversation-list`).send({
+                type: 'broadcast',
+                event: 'MESSAGE_CREATED',
+                payload: {
+                    roomId,
+                    message: {
+                        ...result.data,
+                        author: {
+                            id: result.data.author_id,
+                            name: result.data.author?.name ?? profile?.name ?? null,
+                            image_url: result.data.author?.image_url ?? profile?.image_url ?? null,
+                        },
+                    },
+                },
+            })
         }
 
         setSending(false)

@@ -8,7 +8,7 @@ import BoardsListLoader from './board-list-loader'
 import { formatDate } from '@/lib/utils'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty'
 import { Presentation } from 'lucide-react'
-import { createClient } from '@/lib/client'
+import { supabase } from '@/lib/client'
 
 type BoardsResponse = {
     error: boolean
@@ -111,7 +111,6 @@ function BoardListWithData({
     )
 
     useEffect(() => {
-        const supabase = createClient()
 
         const channel = supabase
             .channel(`boards:${organization.id}`)
