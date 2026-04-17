@@ -6,7 +6,8 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { useState } from 'react'
 import { setupProfile } from '@/lib/services/actions/profile'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'nextjs-toploader/app'
+
 
 const ProfileSetupForm = () => {
     const [name, setName] = useState<string>('')

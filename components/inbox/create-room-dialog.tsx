@@ -13,7 +13,7 @@ import { Plus, Search, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createChatRoom } from '@/lib/services/actions/chat'
 import { createChatRoomSchema } from '@/lib/schemas/chat'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'nextjs-toploader/app'
 import type { Member } from '@/lib/types'
 
 type FormData = Pick<z.infer<typeof createChatRoomSchema>, 'name'>

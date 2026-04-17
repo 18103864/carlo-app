@@ -2,7 +2,7 @@
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { PlusIcon, Search } from 'lucide-react'
 import { Button } from '../ui/button'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'nextjs-toploader/app'
 
 const OrganizationHeader = () => {
     const router = useRouter()

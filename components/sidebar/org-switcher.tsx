@@ -1,7 +1,7 @@
 'use client'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'nextjs-toploader/app'
 import { ChevronsUpDown, Plus } from 'lucide-react'
 import { useOrg } from '@/context/org-context'
 import OrgLoader from './org-loader'

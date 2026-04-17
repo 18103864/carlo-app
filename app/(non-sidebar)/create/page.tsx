@@ -7,7 +7,7 @@ import { createOrganizationSchema } from "@/lib/schemas/organizations"
 import { createOrganization } from "@/lib/services/actions/organization"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "nextjs-toploader/app"
 import { Controller, useForm } from "react-hook-form"
 import z from "zod"
 
