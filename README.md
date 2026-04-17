@@ -330,4 +330,4 @@ message
 
 - [x] ~~Real-time messaging (replace mock data with Supabase Realtime)~~
 - [x] ~~Real-time board updates (Supabase Realtime subscriptions)~~
-- [ ] Real-time conversation list updates (live sidebar refresh on new messages)
+- [x] ~~Real-time conversation list updates (live sidebar refresh on new messages)~~
